@@ -3,63 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FamilyHub Custom</title>
+    <title>FamilyHub Elite</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#4f46e5">
     <style>
+        .modal-overlay { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-24">
-    <header class="bg-indigo-700 text-white p-6 shadow-xl sticky top-0 z-50">
-        <div class="max-w-md mx-auto">
-            <h1 class="text-2xl font-black tracking-tight uppercase">FamilyHub <span class="font-thin text-indigo-200 text-sm">Custom</span></h1>
-        </div>
+<body class="bg-slate-50 min-h-screen pb-24 font-sans">
+
+    <header class="bg-indigo-700 text-white p-5 shadow-xl sticky top-0 z-40 flex justify-between items-center">
+        <h1 class="text-xl font-black tracking-tighter uppercase italic">FamilyHub</h1>
+        <button onclick="toggleModal('configModal')" class="p-2 bg-indigo-600 rounded-full shadow-inner hover:bg-indigo-500 transition-colors">
+            ⚙️
+        </button>
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-4">
         
-        <!-- Secção de Configuração (Escondida por defeito) -->
-        <details class="bg-indigo-50 rounded-2xl p-4 border border-indigo-100 mb-2 shadow-inner">
-            <summary class="text-xs font-black text-indigo-700 uppercase cursor-pointer">⚙️ Gerir Lojas e Secções</summary>
-            <div class="mt-4 space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold text-indigo-400 block mb-1">LOJAS (Separadas por vírgula)</label>
-                    <textarea id="configLojas" class="w-full p-2 text-xs rounded-lg border-none focus:ring-1 focus:ring-indigo-400 outline-none h-16 shadow-sm"></textarea>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-indigo-400 block mb-1">SECÇÕES (Separadas por vírgula)</label>
-                    <textarea id="configSeccoes" class="w-full p-2 text-xs rounded-lg border-none focus:ring-1 focus:ring-indigo-400 outline-none h-16 shadow-sm"></textarea>
-                </div>
-                <button onclick="salvarConfig()" class="w-full bg-indigo-500 text-white py-2 rounded-lg text-xs font-bold uppercase tracking-widest shadow-md">Atualizar Menus</button>
-            </div>
-        </details>
-
-        <!-- Filtro Visualização (Dropdown) -->
         <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3">
             <span class="text-[10px] font-black text-slate-400 uppercase whitespace-nowrap">Ver na loja:</span>
-            <select id="filtroVisualizacao" onchange="render()" class="flex-1 bg-slate-50 p-2 rounded-xl text-xs font-bold text-slate-700 outline-none border-none">
-                <option value="Todos">Todas as Lojas</option>
-            </select>
+            <select id="filtroVisualizacao" onchange="render()" class="flex-1 bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer"></select>
         </div>
 
-        <!-- Input Section -->
-        <section class="bg-white rounded-[2rem] shadow-sm p-6 border border-slate-200">
-            <input id="itemNome" type="text" placeholder="O que comprar?" class="w-full p-4 bg-slate-50 rounded-2xl mb-3 outline-none focus:ring-2 focus:ring-indigo-500 text-lg border-none font-medium">
-            <div class="grid grid-cols-2 gap-2 mb-3">
+        <section class="bg-white rounded-[2rem] shadow-md p-6 border border-slate-100">
+            <div class="flex gap-2 mb-3">
+                <input id="itemNome" type="text" placeholder="Artigo..." class="flex-[3] p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-lg border-none font-medium">
+                <input id="itemQt" type="text" placeholder="Qt." class="flex-1 p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 text-center text-sm border-none font-bold">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 mb-4">
                 <select id="itemLoja" class="p-3 bg-slate-100 rounded-xl text-xs font-bold text-slate-600 outline-none border-none"></select>
                 <select id="itemSeccao" class="p-3 bg-slate-100 rounded-xl text-xs font-bold text-slate-600 outline-none border-none"></select>
             </div>
-            <button onclick="adicionar()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-indigo-100 active:scale-95 transition-all uppercase">
+            
+            <button id="btnSalvar" onclick="adicionar()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-indigo-100 active:scale-95 transition-all uppercase">
                 ADICIONAR
             </button>
         </section>
 
-        <!-- List Content -->
         <div id="listaItems" class="space-y-6"></div>
     </main>
+
+    <div id="configModal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl">
+            <h2 class="text-lg font-black text-slate-800 mb-4 uppercase">Configurações</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 block mb-1 uppercase tracking-widest">Lojas (separadas por vírgula)</label>
+                    <textarea id="configLojas" class="w-full p-3 bg-slate-50 rounded-xl border-none text-sm h-20 outline-none"></textarea>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 block mb-1 uppercase tracking-widest">Secções (separadas por vírgula)</label>
+                    <textarea id="configSeccoes" class="w-full p-3 bg-slate-50 rounded-xl border-none text-sm h-20 outline-none"></textarea>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="toggleModal('configModal')" class="flex-1 bg-slate-100 text-slate-500 py-3 rounded-xl font-bold text-xs uppercase">Fechar</button>
+                    <button onclick="salvarConfig()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-lg shadow-indigo-100">Gravar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { firebaseConfig } from './config.js';
@@ -68,19 +72,19 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const colRef = collection(db, "familia_custom_v1");
+        const colRef = collection(db, "familia_elite_v5");
 
-        // Configurações Padrão
         let lojas = ["Qualquer", "Continente", "Pingo Doce", "Lidl", "Mercadona"];
-        let seccoes = ["Geral", "Talho", "Peixaria", "Frutas/Legumes", "Padaria", "Laticínios", "Limpeza", "Congelados"];
+        let seccoes = ["Geral", "Talho", "Peixaria", "Frutas", "Padaria", "Limpeza"];
+        let editId = null;
 
-        // Carregar do LocalStorage
+        window.toggleModal = (id) => document.getElementById(id).classList.toggle('hidden');
+
         const carregarConfig = () => {
-            const l = localStorage.getItem('fh_lojas');
-            const s = localStorage.getItem('fh_seccoes');
+            const l = localStorage.getItem('fh_lojas_v5');
+            const s = localStorage.getItem('fh_seccoes_v5');
             if(l) lojas = JSON.parse(l);
             if(s) seccoes = JSON.parse(s);
-            
             document.getElementById('configLojas').value = lojas.join(', ');
             document.getElementById('configSeccoes').value = seccoes.join(', ');
             atualizarDropdowns();
@@ -89,45 +93,54 @@
         window.salvarConfig = () => {
             lojas = document.getElementById('configLojas').value.split(',').map(s => s.trim()).filter(s => s);
             seccoes = document.getElementById('configSeccoes').value.split(',').map(s => s.trim()).filter(s => s);
-            localStorage.setItem('fh_lojas', JSON.stringify(lojas));
-            localStorage.setItem('fh_seccoes', JSON.stringify(seccoes));
+            localStorage.setItem('fh_lojas_v5', JSON.stringify(lojas));
+            localStorage.setItem('fh_seccoes_v5', JSON.stringify(seccoes));
             atualizarDropdowns();
+            toggleModal('configModal');
             render();
-            alert('Configurações guardadas!');
         };
 
         const atualizarDropdowns = () => {
-            const il = document.getElementById('itemLoja');
-            const fv = document.getElementById('filtroVisualizacao');
-            const is = document.getElementById('itemSeccao');
-            
-            const currentFv = fv.value;
-            
-            il.innerHTML = lojas.map(l => `<option value="${l}">${l}</option>`).join('');
-            fv.innerHTML = `<option value="Todos">Todas as Lojas</option>` + lojas.map(l => `<option value="${l}">${l}</option>`).join('');
-            is.innerHTML = seccoes.map(s => `<option value="${s}">${s}</option>`).join('');
-            
-            fv.value = currentFv || "Todos";
+            document.getElementById('itemLoja').innerHTML = lojas.map(v => `<option value="${v}">${v}</option>`).join('');
+            document.getElementById('itemSeccao').innerHTML = seccoes.map(v => `<option value="${v}">${v}</option>`).join('');
+            document.getElementById('filtroVisualizacao').innerHTML = `<option value="Todos">Todas as Lojas</option>` + lojas.map(v => `<option value="${v}">${v}</option>`).join('');
         };
 
         window.adicionar = async () => {
             const nome = document.getElementById('itemNome');
+            const qt = document.getElementById('itemQt');
             const loja = document.getElementById('itemLoja');
             const seccao = document.getElementById('itemSeccao');
-            if (nome.value.trim()) {
-                await addDoc(colRef, {
-                    nome: nome.value,
-                    loja: loja.value,
-                    seccao: seccao.value,
-                    feito: false,
-                    t: Date.now()
-                });
-                nome.value = ""; // Limpa a linha de entrada
+
+            if (!nome.value.trim()) return;
+
+            const dados = { nome: nome.value, qt: qt.value, loja: loja.value, seccao: seccao.value, feito: false, t: Date.now() };
+
+            if (editId) {
+                await updateDoc(doc(db, "familia_elite_v5", editId), dados);
+                editId = null;
+                document.getElementById('btnSalvar').innerText = "ADICIONAR";
+            } else {
+                await addDoc(colRef, dados);
             }
+            
+            nome.value = ""; 
+            qt.value = ""; // Limpeza automática garantida
+            nome.focus();
         };
 
-        window.toggle = async (id, estado) => await updateDoc(doc(db, "familia_custom_v1", id), { feito: !estado });
-        window.remover = async (id) => { if(confirm('Apagar?')) await deleteDoc(doc(db, "familia_custom_v1", id)); };
+        window.prepararEdicao = (id, n, q, l, s) => {
+            document.getElementById('itemNome').value = n;
+            document.getElementById('itemQt').value = q;
+            document.getElementById('itemLoja').value = l;
+            document.getElementById('itemSeccao').value = s;
+            editId = id;
+            document.getElementById('btnSalvar').innerText = "ATUALIZAR";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.toggle = async (id, est) => await updateDoc(doc(db, "familia_elite_v5", id), { feito: !est });
+        window.remover = async (id) => { if(confirm('Apagar artigo?')) await deleteDoc(doc(db, "familia_elite_v5", id)); };
 
         window.render = () => {
             const filtro = document.getElementById('filtroVisualizacao').value;
@@ -137,30 +150,28 @@
                 const grupos = {};
                 
                 snap.forEach(d => {
-                    const item = d.data();
-                    // Lógica: Se filtro é X, mostra X + Qualquer Loja. Se filtro é Todos, mostra tudo.
-                    if (filtro !== 'Todos' && item.loja !== filtro && item.loja !== 'Qualquer') return;
-                    
-                    if (!grupos[item.seccao]) grupos[item.seccao] = [];
-                    grupos[item.seccao].push({id: d.id, ...item});
+                    const i = d.data();
+                    if (filtro !== 'Todos' && i.loja !== filtro && i.loja !== 'Qualquer') return;
+                    if (!grupos[i.seccao]) grupos[i.seccao] = [];
+                    grupos[i.seccao].push({id: d.id, ...i});
                 });
 
-                seccoes.forEach(secName => {
-                    if(!grupos[secName]) return;
-                    let html = `<div class="space-y-2">
-                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">${secName}</h3>`;
-                    
-                    grupos[secName].forEach(item => {
-                        html += `
-                            <div class="bg-white p-4 rounded-2xl shadow-sm flex justify-between items-center ${item.feito ? 'opacity-40 grayscale' : ''}">
-                                <div class="flex-1" onclick="toggle('${item.id}', ${item.feito})">
-                                    <p class="text-md font-bold ${item.feito ? 'line-through text-slate-400' : 'text-slate-800'}">${item.nome}</p>
-                                    <span class="text-[9px] font-black uppercase text-indigo-400">${item.loja}</span>
-                                </div>
-                                <button onclick="remover('${item.id}')" class="text-slate-200 hover:text-red-500 text-lg ml-4">✕</button>
-                            </div>`;
+                seccoes.forEach(sec => {
+                    if(!grupos[sec]) return;
+                    let h = `<div class="space-y-2"><h3 class="text-[9px] font-black text-slate-300 uppercase tracking-widest px-2">${sec}</h3>`;
+                    grupos[sec].forEach(i => {
+                        h += `<div class="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between ${i.feito ? 'opacity-40 grayscale' : ''}">
+                            <div class="flex-1" onclick="toggle('${i.id}', ${i.feito})">
+                                <p class="text-md font-bold ${i.feito ? 'line-through text-slate-400' : 'text-slate-800'}">${i.nome} <span class="text-indigo-500 font-medium ml-1 text-sm">${i.qt}</span></p>
+                                <span class="text-[9px] font-black text-slate-400 uppercase">${i.loja}</span>
+                            </div>
+                            <div class="flex gap-4 text-slate-300">
+                                <button onclick="prepararEdicao('${i.id}','${i.nome}','${i.qt}','${i.loja}','${i.seccao}')" class="hover:text-indigo-500 text-lg">✎</button>
+                                <button onclick="remover('${i.id}')" class="hover:text-red-500 text-lg">✕</button>
+                            </div>
+                        </div>`;
                     });
-                    list.innerHTML += html + `</div>`;
+                    list.innerHTML += h + `</div>`;
                 });
             });
         };
