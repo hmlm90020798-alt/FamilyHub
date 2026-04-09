@@ -2,116 +2,93 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FamilyHub</title>
-    <meta name="theme-color" content="#4f46e5">
-    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FamilyHub Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .list-enter { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
 </head>
-<body class="bg-slate-50 min-h-screen pb-10">
-
-    <header class="bg-indigo-600 text-white p-6 shadow-lg mb-6 sticky top-0 z-10">
-        <h1 class="text-2xl font-bold text-center">FamilyHub 🏠</h1>
-        <p class="text-xs text-center opacity-80 mt-1">Compras e Tarefas Partilhadas</p>
+<body class="bg-slate-100 min-h-screen pb-10">
+    <header class="bg-indigo-700 text-white p-6 shadow-xl sticky top-0 z-50">
+        <div class="max-w-md mx-auto">
+            <h1 class="text-2xl font-black italic tracking-tighter">FAMILYHUB <span class="font-light not-italic">v2.0</span></h1>
+        </div>
     </header>
 
-    <div class="max-w-md mx-auto p-4 space-y-8">
-        <!-- Secção de Compras -->
-        <section class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
-            <h2 class="text-lg font-bold text-indigo-700 mb-4 flex items-center gap-2">
-                🛒 Lista de Compras
-            </h2>
-            <div class="flex gap-2 mb-4">
-                <input id="itemCompra" type="text" placeholder="Adicionar item..." class="flex-1 p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-                <button onclick="adicionarItem('compras', 'itemCompra')" class="bg-indigo-600 text-white px-5 py-2 rounded-xl hover:bg-indigo-700 active:scale-95 transition-all font-bold text-xl">+</button>
+    <main class="max-w-md mx-auto p-4 space-y-6">
+        <section class="bg-white rounded-3xl shadow-lg p-6 border border-gray-100">
+            <input id="itemNome" type="text" placeholder="O que precisamos?" class="w-full p-4 bg-gray-50 rounded-2xl mb-4 outline-none focus:ring-2 focus:ring-indigo-500 text-lg transition-all">
+            <div class="flex gap-3">
+                <select id="itemLoja" class="flex-1 p-3 bg-gray-50 rounded-xl text-sm font-bold text-gray-600 outline-none">
+                    <option value="Qualquer">Qualquer Loja</option>
+                    <option value="Continente">Continente</option>
+                    <option value="Pingo Doce">Pingo Doce</option>
+                    <option value="Lidl">Lidl</option>
+                    <option value="Mercadona">Mercadona</option>
+                </select>
+                <button onclick="adicionar()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-indigo-200 active:scale-95 transition-all">ADD</button>
             </div>
-            <ul id="listaCompras" class="divide-y divide-slate-100"></ul>
         </section>
 
-        <!-- Secção de Tarefas -->
-        <section class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
-            <h2 class="text-lg font-bold text-emerald-700 mb-4 flex items-center gap-2">
-                ✅ Tarefas e Compromissos
-            </h2>
-            <div class="flex gap-2 mb-4">
-                <input id="itemTarefa" type="text" placeholder="Nova tarefa..." class="flex-1 p-3 border rounded-xl bg-slate-50 focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
-                <button onclick="adicionarItem('tarefas', 'itemTarefa')" class="bg-emerald-600 text-white px-5 py-2 rounded-xl hover:bg-emerald-700 active:scale-95 transition-all font-bold text-xl">+</button>
-            </div>
-            <ul id="listaTarefas" class="divide-y divide-slate-100"></ul>
-        </section>
-    </div>
+        <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
+            <button onclick="filtrar('Todos')" class="bg-white px-6 py-2 rounded-full shadow-sm text-xs font-black border uppercase">Todos</button>
+            <button onclick="filtrar('Continente')" class="bg-white px-6 py-2 rounded-full shadow-sm text-xs font-black border border-red-500 text-red-500 uppercase">Continente</button>
+            <button onclick="filtrar('Mercadona')" class="bg-white px-6 py-2 rounded-full shadow-sm text-xs font-black border border-green-600 text-green-600 uppercase">Mercadona</button>
+        </div>
+
+        <div id="listaItems" class="space-y-4"></div>
+    </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- SUBSTITUA PELAS SUAS CONFIGURAÇÕES DO FIREBASE ---
         const firebaseConfig = {
-            apiKey: "A_TUA_API_KEY",
-            authDomain: "O_TEU_PROJETO.firebaseapp.com",
-            projectId: "O_TEU_PROJETO",
-            storageBucket: "O_TEU_PROJETO.appspot.com",
-            messagingSenderId: "TEU_SENDER_ID",
-            appId: "TEU_APP_ID"
+            apiKey: "COLA_AQUI",
+            authDomain: "TEU_PROJETO.firebaseapp.com",
+            projectId: "TEU_PROJETO",
+            storageBucket: "TEU_PROJETO.appspot.com",
+            messagingSenderId: "ID",
+            appId: "APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const colRef = collection(db, "familia_v1");
 
-        // Função Global para Adicionar
-        window.adicionarItem = async (colecao, inputId) => {
-            const input = document.getElementById(inputId);
-            const texto = input.value.trim();
-            if (texto !== "") {
-                await addDoc(collection(db, colecao), {
-                    texto: texto,
-                    criadoEm: Date.now()
-                });
-                input.value = "";
+        window.adicionar = async () => {
+            const nome = document.getElementById('itemNome');
+            const loja = document.getElementById('itemLoja');
+            if (nome.value.trim()) {
+                await addDoc(colRef, { nome: nome.value, loja: loja.value, feito: false, t: Date.now() });
+                nome.value = "";
             }
         };
 
-        // Função Global para Eliminar
-        window.eliminarItem = async (colecao, id) => {
-            await deleteDoc(doc(db, colecao, id));
+        window.toggle = async (id, estado) => await updateDoc(doc(db, "familia_v1", id), { feito: !estado });
+        window.remover = async (id) => await deleteDoc(doc(db, "familia_v1", id));
+
+        window.filtrar = (loja) => {
+            onSnapshot(query(colRef, orderBy("t", "desc")), (snap) => {
+                const list = document.getElementById('listaItems');
+                list.innerHTML = "";
+                snap.forEach(d => {
+                    const item = d.data();
+                    if (loja !== 'Todos' && item.loja !== loja) return;
+                    const cor = { 'Continente': 'border-red-500', 'Mercadona': 'border-green-600', 'Lidl': 'border-blue-500' }[item.loja] || 'border-indigo-400';
+                    list.innerHTML += `
+                        <div class="bg-white p-5 rounded-3xl shadow-sm border-l-[10px] ${cor} flex justify-between items-center transition-all ${item.feito ? 'opacity-40 grayscale' : ''}">
+                            <div class="flex-1" onclick="toggle('${d.id}', ${item.feito})">
+                                <p class="text-lg font-bold ${item.feito ? 'line-through' : ''}">${item.nome}</p>
+                                <p class="text-[10px] font-black uppercase text-gray-400">${item.loja}</p>
+                            </div>
+                            <button onclick="remover('${d.id}')" class="text-gray-200 hover:text-red-500 text-xl ml-4">✕</button>
+                        </div>`;
+                });
+            });
         };
-
-        // Renderizar Compras
-        onSnapshot(query(collection(db, "compras"), orderBy("criadoEm", "desc")), (snapshot) => {
-            const lista = document.getElementById('listaCompras');
-            lista.innerHTML = "";
-            snapshot.forEach(docSnap => {
-                const item = docSnap.data();
-                lista.innerHTML += `
-                    <li class="py-3 flex justify-between items-center list-enter">
-                        <span class="text-slate-700 font-medium">${item.texto}</span>
-                        <button onclick="eliminarItem('compras', '${docSnap.id}')" class="text-slate-300 hover:text-red-500 p-1">✕</button>
-                    </li>`;
-            });
-        });
-
-        // Renderizar Tarefas
-        onSnapshot(query(collection(db, "tarefas"), orderBy("criadoEm", "desc")), (snapshot) => {
-            const lista = document.getElementById('listaTarefas');
-            lista.innerHTML = "";
-            snapshot.forEach(docSnap => {
-                const item = docSnap.data();
-                lista.innerHTML += `
-                    <li class="py-3 flex justify-between items-center list-enter">
-                        <span class="text-slate-700 font-medium">${item.texto}</span>
-                        <button onclick="eliminarItem('tarefas', '${docSnap.id}')" class="text-slate-300 hover:text-red-500 p-1">✕</button>
-                    </li>`;
-            });
-        });
-
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
+        filtrar('Todos');
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
 </body>
 </html>
