@@ -1,9 +1,9 @@
+// ATENÇÃO: Edita este ficheiro com os teus dados do Firebase apenas uma vez.
 export const firebaseConfig = {
-  apiKey: "AIzaSyCyzOg6uP27icPtTvrcBYVE_WZlpWr6Ow4",
-  authDomain: "familyhub-m.firebaseapp.com",
-  projectId: "familyhub-m",
-  storageBucket: "familyhub-m.firebasestorage.app",
-  messagingSenderId: "789023063066",
-  appId: "1:789023063066:web:1cc0bcbeb85a1dd6cd65a3",
-  measurementId: "G-XX3G0SBLWN"
+    apiKey: "COLA_AQUI_A_API_KEY",
+    authDomain: "TEU-PROJETO.firebaseapp.com",
+    projectId: "TEU-PROJETO",
+    storageBucket: "TEU-PROJETO.appspot.com",
+    messagingSenderId: "TEU_ID",
+    appId: "TEU_APP_ID"
 };

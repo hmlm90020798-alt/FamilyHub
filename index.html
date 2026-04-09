@@ -7,87 +7,116 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
-<body class="bg-slate-100 min-h-screen pb-10">
-    <header class="bg-indigo-700 text-white p-6 shadow-xl sticky top-0 z-50">
-        <div class="max-w-md mx-auto">
-            <h1 class="text-2xl font-black italic tracking-tighter">FAMILYHUB <span class="font-light not-italic">v2.0</span></h1>
+<body class="bg-slate-50 min-h-screen pb-20">
+    <header class="bg-indigo-600 text-white p-6 shadow-lg sticky top-0 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black italic tracking-tighter uppercase">FamilyHub</h1>
+            <div id="status" class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
         </div>
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-6">
-        <section class="bg-white rounded-3xl shadow-lg p-6 border border-gray-100">
-            <input id="itemNome" type="text" placeholder="O que precisamos?" class="w-full p-4 bg-gray-50 rounded-2xl mb-4 outline-none focus:ring-2 focus:ring-indigo-500 text-lg transition-all">
+        <!-- Input Section -->
+        <section class="bg-white rounded-3xl shadow-sm p-6 border border-slate-200">
+            <input id="itemNome" type="text" placeholder="O que adicionar?" 
+                class="w-full p-4 bg-slate-50 rounded-2xl mb-4 outline-none focus:ring-2 focus:ring-indigo-500 text-lg transition-all border-none">
             <div class="flex gap-3">
-                <select id="itemLoja" class="flex-1 p-3 bg-gray-50 rounded-xl text-sm font-bold text-gray-600 outline-none">
+                <select id="itemLoja" class="flex-1 p-3 bg-slate-50 rounded-xl text-sm font-bold text-slate-600 outline-none border-none">
                     <option value="Qualquer">Qualquer Loja</option>
                     <option value="Continente">Continente</option>
                     <option value="Pingo Doce">Pingo Doce</option>
                     <option value="Lidl">Lidl</option>
                     <option value="Mercadona">Mercadona</option>
+                    <option value="Talho/Padaria">Talho/Padaria</option>
                 </select>
-                <button onclick="adicionar()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-indigo-200 active:scale-95 transition-all">ADD</button>
+                <button onclick="adicionar()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-black shadow-lg shadow-indigo-100 active:scale-95 transition-all">
+                    ADICIONAR
+                </button>
             </div>
         </section>
 
-        <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
-            <button onclick="filtrar('Todos')" class="bg-white px-6 py-2 rounded-full shadow-sm text-xs font-black border uppercase">Todos</button>
-            <button onclick="filtrar('Continente')" class="bg-white px-6 py-2 rounded-full shadow-sm text-xs font-black border border-red-500 text-red-500 uppercase">Continente</button>
-            <button onclick="filtrar('Mercadona')" class="bg-white px-6 py-2 rounded-full shadow-sm text-xs font-black border border-green-600 text-green-600 uppercase">Mercadona</button>
+        <!-- Filter Pills -->
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="filtrar('Todos')" class="bg-white px-6 py-2 rounded-full shadow-sm text-[10px] font-black border uppercase tracking-wider">Todos</button>
+            <button onclick="filtrar('Continente')" class="bg-white px-6 py-2 rounded-full shadow-sm text-[10px] font-black border border-red-500 text-red-500 uppercase tracking-wider">Continente</button>
+            <button onclick="filtrar('Mercadona')" class="bg-white px-6 py-2 rounded-full shadow-sm text-[10px] font-black border border-green-600 text-green-600 uppercase tracking-wider">Mercadona</button>
+            <button onclick="filtrar('Lidl')" class="bg-white px-6 py-2 rounded-full shadow-sm text-[10px] font-black border border-blue-600 text-blue-600 uppercase tracking-wider">Lidl</button>
         </div>
 
+        <!-- List Content -->
         <div id="listaItems" class="space-y-4"></div>
     </main>
 
     <script type="module">
+        import { firebaseConfig } from './config.js';
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "COLA_AQUI",
-            authDomain: "TEU_PROJETO.firebaseapp.com",
-            projectId: "TEU_PROJETO",
-            storageBucket: "TEU_PROJETO.appspot.com",
-            messagingSenderId: "ID",
-            appId: "APP_ID"
-        };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const colRef = collection(db, "familia_v1");
+        const colRef = collection(db, "familia_prod_v1");
 
         window.adicionar = async () => {
             const nome = document.getElementById('itemNome');
             const loja = document.getElementById('itemLoja');
             if (nome.value.trim()) {
-                await addDoc(colRef, { nome: nome.value, loja: loja.value, feito: false, t: Date.now() });
+                await addDoc(colRef, {
+                    nome: nome.value,
+                    loja: loja.value,
+                    feito: false,
+                    t: Date.now()
+                });
                 nome.value = "";
             }
         };
 
-        window.toggle = async (id, estado) => await updateDoc(doc(db, "familia_v1", id), { feito: !estado });
-        window.remover = async (id) => await deleteDoc(doc(db, "familia_v1", id));
+        window.toggle = async (id, estado) => {
+            await updateDoc(doc(db, "familia_prod_v1", id), { feito: !estado });
+        };
 
+        window.remover = async (id) => {
+            if(confirm('Apagar item?')) await deleteDoc(doc(db, "familia_prod_v1", id));
+        };
+
+        let currentFilter = 'Todos';
         window.filtrar = (loja) => {
+            currentFilter = loja;
+            render();
+        };
+
+        function render() {
             onSnapshot(query(colRef, orderBy("t", "desc")), (snap) => {
                 const list = document.getElementById('listaItems');
                 list.innerHTML = "";
                 snap.forEach(d => {
                     const item = d.data();
-                    if (loja !== 'Todos' && item.loja !== loja) return;
-                    const cor = { 'Continente': 'border-red-500', 'Mercadona': 'border-green-600', 'Lidl': 'border-blue-500' }[item.loja] || 'border-indigo-400';
+                    if (currentFilter !== 'Todos' && item.loja !== currentFilter) return;
+                    
+                    const cor = { 
+                        'Continente': 'border-red-500', 
+                        'Mercadona': 'border-green-600', 
+                        'Lidl': 'border-blue-500',
+                        'Pingo Doce': 'border-orange-500'
+                    }[item.loja] || 'border-indigo-400';
+                    
                     list.innerHTML += `
                         <div class="bg-white p-5 rounded-3xl shadow-sm border-l-[10px] ${cor} flex justify-between items-center transition-all ${item.feito ? 'opacity-40 grayscale' : ''}">
                             <div class="flex-1" onclick="toggle('${d.id}', ${item.feito})">
-                                <p class="text-lg font-bold ${item.feito ? 'line-through' : ''}">${item.nome}</p>
-                                <p class="text-[10px] font-black uppercase text-gray-400">${item.loja}</p>
+                                <p class="text-lg font-bold leading-tight ${item.feito ? 'line-through text-slate-400' : 'text-slate-800'}">${item.nome}</p>
+                                <p class="text-[10px] font-black uppercase text-slate-400 mt-1">${item.loja}</p>
                             </div>
-                            <button onclick="remover('${d.id}')" class="text-gray-200 hover:text-red-500 text-xl ml-4">✕</button>
+                            <button onclick="remover('${d.id}')" class="text-slate-200 hover:text-red-500 text-xl ml-4 p-2 transition-colors">✕</button>
                         </div>`;
                 });
             });
-        };
-        filtrar('Todos');
+        }
+
+        render();
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
 </body>
